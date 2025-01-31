@@ -1,4 +1,4 @@
-import actionSelect from "../src/index";
+import actionSelect from "../src/index.js";
 
 const example = async () => {
     const answer = await actionSelect({

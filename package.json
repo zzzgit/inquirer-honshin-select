@@ -1,19 +1,22 @@
 {
-  "name": "inquirer-action-select",
+  "name": "inquirer-honshin-select",
   "version": "0.0.3",
   "description": "Inquirer prompt that lets you choose an item from a list and choose an action to take by pressing a key.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.js",
+  "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zenithlight/inquirer-action-select.git"
+    "url": "git+https://github.com/zzzgit/inquirer-honshin-select.git"
   },
-  "author": "Alexis Anand <alexis@alexisanand.com>",
+  "author": "ninja",
   "license": "ISC",
   "dependencies": {
-    "@inquirer/core": "^7.1.2"
+    "@inquirer/core": "^10.1.5",
+    "ansi-escapes": "^7.0.0",
+    "chalk": "^5.4.1",
+    "figures": "^6.1.0"
   },
-  "devDependencies": {
-    "ts-node": "^10.9.2"
+  "scripts": {
+    "start": "node src/index.js"
   }
 }

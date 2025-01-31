@@ -1,11 +1,15 @@
-# inquirer-action-select
+# inquirer-honshin-select
 
 Inquirer prompt that lets you choose an item from a list and choose an action to take by pressing a key.
+
+This project is a fork from: [inquirer-action-select](https://github.com/zenithlight/inquirer-action-select).
+
+This project is pure JavaScript and in ES module.
 
 ## Installation
 
 ```shell
-npm i inquirer-action-select
+npm i inquirer-honshin-select
 ```
 
 ## Usage

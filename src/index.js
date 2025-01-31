@@ -14,67 +14,28 @@ import {
     Separator,
     ValidationError,
     makeTheme,
-    type Theme,
 } from '@inquirer/core';
-import type { PartialDeep } from '@inquirer/type';
 import chalk from 'chalk';
 import figures from 'figures';
 import ansiEscapes from 'ansi-escapes';
 
-type SelectTheme = {
-    icon: { cursor: string };
-    style: { disabled: (text: string) => string };
-};
-
-const selectTheme: SelectTheme = {
+const selectTheme = {
     icon: { cursor: figures.pointer },
-    style: { disabled: (text: string) => chalk.dim(`- ${text}`) },
+    style: { disabled: (text) => chalk.dim(`- ${text}`) },
 };
 
-type Action<ActionValue> = {
-    value: ActionValue;
-    name: string;
-    key: string;
-}
-
-type Choice<Value> = {
-    value: Value;
-    name?: string;
-    description?: string;
-    disabled?: boolean | string;
-    type?: never;
-};
-
-type ActionSelectConfig<ActionValue, Value> = {
-    message: string;
-    actions: ReadonlyArray<Action<ActionValue>>;
-    choices: ReadonlyArray<Choice<Value> | Separator>;
-    pageSize?: number;
-    loop?: boolean;
-    default?: unknown;
-    theme?: PartialDeep<Theme<SelectTheme>>;
-    // TODO: Allow assigning a default action for enter rather than returning an undefined action
-};
-
-type ActionSelectResult<ActionValue, Value> = {
-    action?: ActionValue;
-    answer: Value;
-}
-
-type Item<Value> = Separator | Choice<Value>;
-
-function isSelectable<Value>(item: Item<Value>): item is Choice<Value> {
+function isSelectable(item) {
     return !Separator.isSeparator(item) && !item.disabled;
 }
 
 export default createPrompt(
-    <ActionValue, Value>(config: ActionSelectConfig<ActionValue, Value>, done: (result: ActionSelectResult<ActionValue, Value>) => void): string => {
+    (config, done) => {
         const { choices: items, loop = true, pageSize = 7 } = config;
         const firstRender = useRef(true);
-        const theme = makeTheme<SelectTheme>(selectTheme, config.theme);
+        const theme = makeTheme(selectTheme, config.theme);
         const prefix = usePrefix({ theme });
         const [status, setStatus] = useState('pending');
-        const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+        const searchTimeoutRef = useRef(undefined);
 
         const bounds = useMemo(() => {
             const first = items.findIndex(isSelectable);
@@ -100,18 +61,17 @@ export default createPrompt(
             defaultItemIndex === -1 ? bounds.first : defaultItemIndex,
         );
 
-        const [selectedAction, setSelectedAction] = useState(undefined)
+        const [selectedAction, setSelectedAction] = useState(undefined);
 
-        // Safe to assume the cursor position always point to a Choice.
-        const selectedChoice = items[active] as Choice<Value>;
+        const selectedChoice = items[active];
 
         useKeypress((key, rl) => {
             clearTimeout(searchTimeoutRef.current);
 
-            const action = config.actions.find(action => action.key === key.name)
+            const action = config.actions.find(action => action.key === key.name);
             if (action !== undefined) {
                 setStatus('done');
-                setSelectedAction(action)
+                setSelectedAction(action);
                 done({
                     action: action.value,
                     answer: selectedChoice.value
@@ -133,7 +93,7 @@ export default createPrompt(
                     let next = active;
                     do {
                         next = (next + offset + items.length) % items.length;
-                    } while (!isSelectable(items[next]!));
+                    } while (!isSelectable(items[next]));
                     setActive(next);
                 }
             } else if (isNumberKey(key)) {
@@ -146,10 +106,6 @@ export default createPrompt(
             } else if (isBackspaceKey(key)) {
                 rl.clearLine(0);
             } else {
-                // FIXME: you probably won't be able to search some items because their names gets captured by an action
-                // use a modifier key to enter search?
-
-                // Default to search
                 const searchTerm = rl.line.toLowerCase();
                 const matchIndex = items.findIndex((item) => {
                     if (Separator.isSeparator(item) || !isSelectable(item)) return false;
@@ -173,10 +129,10 @@ export default createPrompt(
 
         const helpTip = config.actions.map(action => `${theme.style.help(action.name)} ${theme.style.key(action.key.toUpperCase())}`).join(' ');
 
-        const page = usePagination<Item<Value>>({
+        const page = usePagination({
             items,
             active,
-            renderItem({ item, isActive }: { item: Item<Value>; isActive: boolean }) {
+            renderItem({ item, isActive }) {
                 if (Separator.isSeparator(item)) {
                     return ` ${item.separator}`;
                 }
@@ -188,7 +144,7 @@ export default createPrompt(
                     return theme.style.disabled(`${line} ${disabledLabel}`);
                 }
 
-                const color = isActive ? theme.style.highlight : (x: string) => x;
+                const color = isActive ? theme.style.highlight : (x) => x;
                 const cursor = isActive ? theme.icon.cursor : ` `;
                 return color(`${cursor} ${line}`);
             },
@@ -200,14 +156,12 @@ export default createPrompt(
         if (status === 'done') {
             const answer =
                 selectedChoice.name ||
-                // TODO: Could we enforce that at the type level? Name should be defined for non-string values.
                 String(selectedChoice.value);
 
             if (selectedAction !== undefined) {
                 const action =
                     selectedAction.name ||
                     String(selectedAction.value);
-                // TODO: separate theme style for action
                 return `${prefix} ${message} ${theme.style.help(action)} ${theme.style.answer(answer)}`;
             } else {
                 return `${prefix} ${message} ${theme.style.answer(answer)}`;
@@ -222,4 +176,4 @@ export default createPrompt(
     },
 );
 
-export { Separator };
+export { Separator }; 
