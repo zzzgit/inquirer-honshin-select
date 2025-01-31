@@ -1,6 +1,6 @@
 {
   "name": "inquirer-honshin-select",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Inquirer prompt that lets you choose an item from a list and choose an action to take by pressing a key.",
   "main": "src/index.js",
   "type": "module",
